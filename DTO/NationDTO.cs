@@ -6,7 +6,7 @@ namespace TankWiki.DTO
     {
         public int NationId { get; set; }
         public string NationName { get; set; }
-        //public ICollection<TankDTO> Tanks { get; set; }
+        public ICollection<TankDTOTruncated> Tanks { get; set; }
 
         public NationDTO(Nations nations) 
         {

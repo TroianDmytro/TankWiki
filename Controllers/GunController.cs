@@ -46,7 +46,7 @@ namespace TankWiki.Controllers
                             .ToList()
             };
 
-            return Ok(gun);
+            return Ok(gunDTO);
 
         }
 
