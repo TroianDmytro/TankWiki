@@ -136,7 +136,7 @@ namespace TankWiki.Controllers
             return Ok("Update tank.");
         }
 
-        [HttpPatch("{Id}")]
+        [HttpPatch("{id}")]
         public async Task<IActionResult> PatchDescription(int id, string description)
         {
             Tank? tank = await _dbContext.Tanks.FindAsync(id);
