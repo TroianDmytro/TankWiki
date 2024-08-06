@@ -19,9 +19,8 @@ namespace TankWiki.Controllers
             _dbContext = dBContext;
         }
 
-        //Измените метод GET в контроллере
         [HttpGet]
-        public async Task<ActionResult<ICollection<Turret>>> GetTurrets()
+        public async Task<IActionResult> GetTurrets()
         {
             var turrets = await _dbContext.Turrets
                 .AsNoTracking()
@@ -29,38 +28,15 @@ namespace TankWiki.Controllers
                 .ThenInclude(g => g.Gun)
                 .Include(tg => tg.TankTurrets)
                 .ThenInclude(tn => tn.Tank)
-                .Select(t => new TurretDTO()
+                .Select(t => new TurretDTO(t)
                 {
-                    TurretId = t.TurretId,
-                    TurretName = t.TurretName,
-                    Tier = t.Tier,
-                    TurretFront = t.TurretFront,
-                    TurretSide = t.TurretSide,
-                    TurretRear = t.TurretRear,
-                    Turn = t.Turn,
-                    Overview = t.Overview,
-                    Weight = t.Weight,
-                    Price = t.Price,
-                    Guns = t.TurretGuns.Select(gun => new GunDTO()
-                    {
-                        GunId = gun.Gun.GunId,
-                        Tier = gun.Gun.Tier,
-                        Name = gun.Gun.Name,
-                        Penetration = gun.Gun.Penetration,
-                        Damage = gun.Gun.Damage,
-                        RateOfFire = gun.Gun.RateOfFire,
-                        Accuracy = gun.Gun.Accuracy,
-                        AimTime = gun.Gun.AimTime,
-                        Ammunition = gun.Gun.Ammunition,
-                        Weight = gun.Gun.Weight,
-                        Price = gun.Gun.Price
-                    }).ToList(),
-                    Tanks = t.TankTurrets.Select(t => t.Tank).ToList()
-                }
-                )
+                    Guns = t.TurretGuns.Select(tg => new GunDTO(tg.Gun)).ToList(),
+                    Tanks = t.TankTurrets.Select(t => new TankDTOTruncated(t.Tank)).ToList()
+                })
                 .ToListAsync();
 
-            return this.StatusCode((int)HttpStatusCode.OK, turrets);
+            //return this.StatusCode((int)HttpStatusCode.OK, turrets);
+            return Ok(turrets);
         }
 
         [HttpGet("{turretId}")]
@@ -100,7 +76,7 @@ namespace TankWiki.Controllers
                         Weight = gun.Gun.Weight,
                         Price = gun.Gun.Price
                     }).ToList(),
-                    Tanks = turret.TankTurrets.Select(t => t.Tank).ToList()
+                    Tanks = turret.TankTurrets.Select(t => new TankDTOTruncated(t.Tank)).ToList()
                 };
                 return Ok(turret);
             }

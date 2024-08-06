@@ -16,7 +16,7 @@ namespace TankWiki.DTO
         public int Weight { get; set; } //вага
         public long Price { get; set; } //ціна
         public List<GunDTO>? Guns { get; set; } = [];
-        public List<Tank>? Tanks { get; set; } = [];
+        public List<TankDTOTruncated>? Tanks { get; set; } = [];
 
         public TurretDTO()
         {
