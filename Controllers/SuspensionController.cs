@@ -32,13 +32,13 @@ namespace TankWiki.Controllers
             return Ok(suspension);
         }
 
-        [HttpGet("{suspensionsId}")]
-        public async Task<IActionResult> Get(int suspensionsId)
+        [HttpGet("{Id}")]
+        public async Task<IActionResult> Get(int id)
         {
             Suspension? suspension = await _dbContext.Suspensions
                                              .Include(ts => ts.TankSuspensions)
                                              .ThenInclude(t => t.Tank)
-                                             .FirstOrDefaultAsync(s => s.SuspensionId == suspensionsId);
+                                             .FirstOrDefaultAsync(s => s.SuspensionId == id);
 
             if (suspension == null) return NotFound("Suspension not found.");
 

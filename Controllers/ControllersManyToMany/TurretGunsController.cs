@@ -2,7 +2,7 @@
 using TankWiki.Models;
 using TankWiki.Models.ModelOneToMany;
 
-namespace TankWiki.Controllers
+namespace TankWiki.Controllers.ControllersManyToMany
 {
     [Route("api/[controller]")]
     [ApiController]

@@ -3,7 +3,7 @@ using TankWiki.Models;
 using TankWiki.Models.ModelOneToMany;
 using TankWiki.Models.ModelTank;
 
-namespace TankWiki.Controllers
+namespace TankWiki.Controllers.ControllersManyToMany
 {
     [Route("[controller]")]
     [ApiController]
@@ -14,7 +14,7 @@ namespace TankWiki.Controllers
         public TankEnginsController(MySqlDBContext dBContext) => _dbContext = dBContext;
 
         [HttpPost]
-        public async Task<IActionResult> Post(int tankId,int engineId)
+        public async Task<IActionResult> Post(int tankId, int engineId)
         {
             //перевіряе чи існуе танк
             Tank? tank = await _dbContext.Tanks.FindAsync(tankId);
