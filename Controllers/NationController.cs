@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using TankWiki.Models.ModelTank;
+﻿using Microsoft.AspNetCore.Mvc;
 using TankWiki.Models;
 using Microsoft.EntityFrameworkCore;
 using TankWiki.DTO;

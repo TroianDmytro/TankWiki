@@ -11,7 +11,7 @@ namespace TankWiki.DTO
         public int SignalRange { get; set; } // Дальність сигналу
         public double Weight { get; set; } //вага
         public long Price { get; set; }//Ціна
-        public List<TankDTO> Tanks { get; set; } = [];
+        public List<TankDTOTruncated> Tanks { get; set; } = [];
         public RadioDTO()
         {
             

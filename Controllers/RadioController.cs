@@ -1,7 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System;
 using TankWiki.DTO;
 using TankWiki.Models;
 using TankWiki.Models.ModelOneToMany;
@@ -25,32 +23,9 @@ namespace TankWiki.Controllers
             var radio = await _dbContext.Radios
                 .Include(tr => tr.TankRadios)
                 .ThenInclude(t => t.Tank)
-                .Select(r => new RadioDTO()
+                .Select(r => new RadioDTO(r)
                 {
-                    RadioId = r.RadioId,
-                    Tier = r.Tier,
-                    Name = r.Name,
-                    SignalRange = r.SignalRange,
-                    Weight = r.Weight,
-                    Price = r.Price,
-                    Tanks = r.TankRadios.Select(tr => new TankDTO(tr.Tank)).ToList()
-                    //Tanks = r.TankRadios.Select(tr => new TankDTO()
-                    //{
-                    //    TankId = tr.Tank.TankId,
-                    //    Name = tr.Tank.Name,
-                    //    NationId = tr.Tank.NationId,
-                    //    Nation = tr.Tank.Nation,
-                    //    Tier = tr.Tank.Tier,
-                    //    HitPoints = tr.Tank.HitPoints,
-                    //    Status = tr.Tank.Status,
-                    //    Price = tr.Tank.Price,
-                    //    Description = tr.Tank.Description,
-                    //    TypeId = tr.Tank.TypeId,
-                    //    TankType = tr.Tank.TankType,
-                    //    ArmorId = tr.Tank.ArmorId,
-                    //    Armor = tr.Tank.Armor,
-                    //    Crew = tr.Tank.Crew
-                    //}).ToList()
+                    Tanks = r.TankRadios.Select(t => new TankDTOTruncated(t.Tank)).ToList()
                 }).ToListAsync();
 
             return Ok(radio);
@@ -59,35 +34,17 @@ namespace TankWiki.Controllers
         [HttpGet("{radioId}")]
         public async Task<IActionResult> GetRadioById(int radioId)
         {
-            Radio radio = await _dbContext.Radios.FindAsync(radioId);
+            Radio? radio = await _dbContext.Radios
+                                .Include(tr => tr.TankRadios)
+                                .ThenInclude(t => t.Tank)
+                                .FirstOrDefaultAsync(r=>r.RadioId==radioId);
 
-            RadioDTO? result = radio == null ? null
-                : new RadioDTO()
-                {
-                    RadioId = radio.RadioId,
-                    Tier = radio.Tier,
-                    Name = radio.Name,
-                    SignalRange = radio.SignalRange,
-                    Weight = radio.Weight,
-                    Price = radio.Price,
-                    Tanks = radio.TankRadios.Select(tr => new TankDTO(tr.Tank)).ToList()
-                    //{
-                    //    TankId = tr.Tank.TankId,
-                    //    Name = tr.Tank.Name,
-                    //    NationId = tr.Tank.NationId,
-                    //    Nation = tr.Tank.Nation,
-                    //    Tier = tr.Tank.Tier,
-                    //    HitPoints = tr.Tank.HitPoints,
-                    //    Status = tr.Tank.Status,
-                    //    Price = tr.Tank.Price,
-                    //    Description = tr.Tank.Description,
-                    //    TypeId = tr.Tank.TypeId,
-                    //    TankType = tr.Tank.TankType,
-                    //    ArmorId = tr.Tank.ArmorId,
-                    //    Armor = tr.Tank.Armor,
-                    //    Crew = tr.Tank.Crew
-                    //}
-                };
+            if (radio == null) return NotFound("Radio not found");
+
+            RadioDTO? result = new RadioDTO(radio)
+            {
+                Tanks = radio.TankRadios.Select(t => new TankDTOTruncated(t.Tank)).ToList()
+            };
 
             return Ok(result);
         }
