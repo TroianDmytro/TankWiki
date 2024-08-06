@@ -17,6 +17,7 @@ namespace TankWiki.DTO
         }
         public ArmorDTO(Armor armor)
         {
+            if(armor == null)return;
             ArmorId = armor.ArmorId;
             Name = armor.Name;
             HullFront = armor.HullFront;
