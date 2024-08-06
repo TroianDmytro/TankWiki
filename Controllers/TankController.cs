@@ -50,7 +50,7 @@ namespace TankWiki.Controllers
                                             }).ToList(),
                                         }
                                         ).ToListAsync();
-                
+
             return Ok(tanks);
         }
 
@@ -71,7 +71,7 @@ namespace TankWiki.Controllers
                                         .ThenInclude(g => g.Gun)
                                         .Include(n => n.Nation)
                                         .Include(a => a.Armor)
-                                        .FirstOrDefaultAsync(t=>t.TankId == id);
+                                        .FirstOrDefaultAsync(t => t.TankId == id);
 
             if (tank == null) return NotFound("Tank not found.");
 
@@ -86,20 +86,12 @@ namespace TankWiki.Controllers
                 }).ToList(),
             };
 
-
             return Ok(tankDTO);
         }
-        //[HttpGet("Nation/{nation}")]
-        //public ActionResult Get(string nation)
-        //{
-
-        //    return Ok();
-        //}
 
         [HttpPost]
         public async Task<IActionResult> Post(string name, int nationId, int tier, int hitPoints, bool status,
-                                              long price, string? description, int typeId, int armorId, 
-                                              [FromForm] List<string> crew)
+                                              long price, int typeId, int armorId, [FromForm] List<string> crew)
         {
             Tank tank = new Tank()
             {
@@ -109,7 +101,6 @@ namespace TankWiki.Controllers
                 HitPoints = hitPoints,
                 Status = status,
                 Price = price,
-                Description = description,
                 TypeId = typeId,
                 ArmorId = armorId,
                 Crew = crew,
@@ -119,13 +110,52 @@ namespace TankWiki.Controllers
             await _dbContext.SaveChangesAsync();
 
             return Ok("Танк додано.");
-
         }
 
-        //[HttpPatch("{tankId}")]
-        //public Task<IActionResult> PatchDescription(int tankId, string description)
-        //{
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Put(int id, string? name, int? nationId, int? tier, int? hitPoints, bool? status,
+                                              long? price, int? typeId, int? armorId, [FromForm] List<string> crew)
+        {
+            Tank? tank = await _dbContext.Tanks.FindAsync(id);
 
-        //}
+            tank.Name = string.IsNullOrEmpty(name) ? tank.Name : name;
+            tank.NationId = nationId != null && _dbContext.Nations.Any(n => n.NationId == nationId) ?
+                                                                    (int)nationId : tank.NationId;
+            tank.Tier = tier != null && tier > 0 && tier <= 10 ? (int)tier : tank.Tier;
+            tank.HitPoints = (int)(hitPoints ?? tank.HitPoints);
+            tank.Status = (bool)(status ?? tank.Status);
+            tank.Price = (long)(price ?? tank.Price);
+            tank.TypeId = typeId != null && _dbContext.TankTypes
+                                            .Any(t => t.TankTypeId == typeId) ? (int)typeId : tank.TypeId;
+            tank.ArmorId = armorId != null && _dbContext.Armors
+                                                .Any(a => a.ArmorId == armorId) ? (int)armorId : tank.ArmorId;
+
+            _dbContext.Tanks.Update(tank);
+            await _dbContext.SaveChangesAsync();
+
+            return Ok("Update tank.");
+        }
+
+        [HttpPatch("{Id}")]
+        public async Task<IActionResult> PatchDescription(int id, string description)
+        {
+            Tank? tank = await _dbContext.Tanks.FindAsync(id);
+            if (tank == null) return NotFound("Tank not found");
+
+            tank.Description = description;
+            _dbContext.Tanks.Update(tank);
+            await _dbContext.SaveChangesAsync();
+
+            return Ok("Added description.");
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            await _dbContext.Tanks.Where(t=>t.TankId==id).ExecuteDeleteAsync();
+            await _dbContext.SaveChangesAsync();
+
+            return Ok("Tank delete.");
+        }
     }
 }
