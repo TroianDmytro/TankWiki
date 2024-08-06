@@ -21,7 +21,7 @@ namespace TankWiki.Models.ModelTank
         public TankType TankType { get; set; } // Тип
         public Armor Armor { get; set; } // Броня
         public int ArmorId { get; set; } // Броня
-        public List<string> Crew { get; set; } = []; // Екіпаж
+        public List<string> Crew { get; set; } = new List<string>(); // Екіпаж
 
         public List<TankTurret> TankTurrets { get; set; } = [];//Башні
         public List<TankEngine> TankEngines { get; set; } = []; // Двигун
