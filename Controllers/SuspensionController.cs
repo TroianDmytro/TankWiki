@@ -38,9 +38,9 @@ namespace TankWiki.Controllers
             Suspension? suspension = await _dbContext.Suspensions
                                              .Include(ts => ts.TankSuspensions)
                                              .ThenInclude(t => t.Tank)
-                                             .FirstOrDefaultAsync(s=>s.SuspensionId==suspensionsId);
+                                             .FirstOrDefaultAsync(s => s.SuspensionId == suspensionsId);
 
-            if(suspension == null)return NotFound("Suspension not found.");
+            if (suspension == null) return NotFound("Suspension not found.");
 
             SuspensionDTO suspensionDTO = new SuspensionDTO(suspension)
             {
@@ -51,12 +51,8 @@ namespace TankWiki.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Post(int tier,
-                                            string name,
-                                            double loadLimit,
-                                            int traverseSpeed,
-                                            double weight,
-                                            long price)
+        public async Task<IActionResult> Post( string name, int tier, double loadLimit, int traverseSpeed,
+                                                double weight, long price)
         {
             Suspension suspension = new Suspension();
             suspension.Name = name;
@@ -72,6 +68,35 @@ namespace TankWiki.Controllers
             return Ok("Трансмисия додана.");
         }
 
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Put(int id, string? name, int? tier, double? loadLimit,
+                                            int? traverseSpeed, double? weight, long? price)
+        {
+            Suspension? susp = await _dbContext.Suspensions.FindAsync(id);
+
+            if (susp == null) return NotFound("Suspension not found.");
+
+            susp.Name = string.IsNullOrEmpty(name)?susp.Name : name;
+            susp.Tier = (int)(tier ?? susp.Tier);
+            susp.LoadLimit = (double)(loadLimit ?? susp.LoadLimit);
+            susp.TraverseSpeed = (int)(traverseSpeed ?? susp.TraverseSpeed);
+            susp.Weight = (double)(weight ?? susp.Weight);
+            susp.Price = (long)(price ?? susp.Price);
+
+            _dbContext.Suspensions.Update(susp);
+            await _dbContext.SaveChangesAsync();
+
+            return Ok("Update suspension.");
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            await _dbContext.Suspensions.Where(s=>s.SuspensionId==id).ExecuteDeleteAsync();
+            await _dbContext.SaveChangesAsync();
+
+            return Ok("Delete suspension");
+        }
 
     }
 }
