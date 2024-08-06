@@ -13,7 +13,7 @@ namespace TankWiki.DTO
         public int TraverseSpeed { get; set; } // Швидкість повороту
         public double Weight { get; set; } //вага
         public long Price { get; set; }//Ціна
-        public List<TankDTO> Tanks { get; set; } = [];
+        public List<TankDTOTruncated> Tanks { get; set; } = [];
 
         public SuspensionDTO()
         {

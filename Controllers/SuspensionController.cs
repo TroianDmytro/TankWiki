@@ -8,7 +8,7 @@ using TankWiki.Models.ModelTank;
 
 namespace TankWiki.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     [ApiController]
     public class SuspensionController : ControllerBase
     {
@@ -26,8 +26,7 @@ namespace TankWiki.Controllers
                                              .ThenInclude(t => t.Tank)
                                              .Select(s => new SuspensionDTO(s)
                                              {
-                                                 Tanks = s.TankSuspensions
-                                                 .Select(t => t == null ? null : new TankDTO(t.Tank)).ToList()
+                                                 Tanks = s.TankSuspensions.Select(t => new TankDTOTruncated(t.Tank)).ToList()
                                              })
                                              .ToListAsync();
             return Ok(suspension);
@@ -36,14 +35,16 @@ namespace TankWiki.Controllers
         [HttpGet("{suspensionsId}")]
         public async Task<IActionResult> Get(int suspensionsId)
         {
-            Suspension suspension = await _dbContext.Suspensions
+            Suspension? suspension = await _dbContext.Suspensions
                                              .Include(ts => ts.TankSuspensions)
                                              .ThenInclude(t => t.Tank)
                                              .FirstOrDefaultAsync(s=>s.SuspensionId==suspensionsId);
 
+            if(suspension == null)return NotFound("Suspension not found.");
+
             SuspensionDTO suspensionDTO = new SuspensionDTO(suspension)
             {
-                Tanks = suspension.TankSuspensions.Select(ts => new TankDTO(ts.Tank)).ToList()
+                Tanks = suspension.TankSuspensions.Select(ts => new TankDTOTruncated(ts.Tank)).ToList()
             };
 
             return Ok(suspensionDTO);
@@ -55,7 +56,7 @@ namespace TankWiki.Controllers
                                             double loadLimit,
                                             int traverseSpeed,
                                             double weight,
-                                            long price, [FromForm] List<int> tanksIds)
+                                            long price)
         {
             Suspension suspension = new Suspension();
             suspension.Name = name;
@@ -64,15 +65,6 @@ namespace TankWiki.Controllers
             suspension.TraverseSpeed = traverseSpeed;
             suspension.Weight = weight;
             suspension.Price = price;
-
-            foreach (var t in tanksIds)
-            {
-                var tank = await _dbContext.Tanks.FindAsync(t);
-                if (tank != null)
-                {
-                    await _dbContext.TankSuspensions.AddAsync(new TankSuspension() { Tank = tank, Suspension = suspension });
-                }
-            }
 
             await _dbContext.Suspensions.AddAsync(suspension);
             await _dbContext.SaveChangesAsync();
