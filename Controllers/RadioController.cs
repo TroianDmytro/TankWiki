@@ -37,7 +37,7 @@ namespace TankWiki.Controllers
             Radio? radio = await _dbContext.Radios
                                 .Include(tr => tr.TankRadios)
                                 .ThenInclude(t => t.Tank)
-                                .FirstOrDefaultAsync(r=>r.RadioId==radioId);
+                                .FirstOrDefaultAsync(r => r.RadioId == radioId);
 
             if (radio == null) return NotFound("Radio not found");
 
@@ -50,8 +50,7 @@ namespace TankWiki.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Post(string name,
-            int tier, int signalRange, int weiht, long price, [FromForm] List<int> tankIds)
+        public async Task<IActionResult> Post(string name, int tier, int signalRange, int weiht, long price)
         {
             Radio radio = new Radio()
             {
@@ -62,20 +61,38 @@ namespace TankWiki.Controllers
                 Price = price
             };
 
-            foreach (var id in tankIds)
-            {
-                var tank = await _dbContext.Tanks.FindAsync(id);
-                if (tank != null)
-                {
-                    await _dbContext.TankRadios.AddAsync(new TankRadio() { Radio = radio, Tank = tank });
-                }
-            }
             await _dbContext.Radios.AddAsync(radio);
             await _dbContext.SaveChangesAsync();
 
             return Ok("Радіо додано.");
         }
 
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Put(int id, string? name, int? tier, int? signalRange, int? weiht, long? price)
+        {
+            Radio? radio = await _dbContext.Radios.FindAsync(id);
 
+            if (radio == null) return NotFound("Radio not found.");
+
+            radio.Name = string.IsNullOrEmpty(name) ? radio.Name : name;
+            radio.Tier = tier == null ? radio.Tier : (int)tier;
+            radio.SignalRange = signalRange == null ? radio.SignalRange : (int)signalRange;
+            radio.Weight = weiht == null ? radio.Weight : (int)weiht;
+            radio.Price = price == null ? radio.Price : (long)price;
+
+            _dbContext.Radios.Update(radio);
+            await _dbContext.SaveChangesAsync();
+
+            return Ok();
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            await _dbContext.Radios.Where(r=>r.RadioId==id).ExecuteDeleteAsync();
+            await _dbContext.SaveChangesAsync();
+
+            return Ok();
+        }
     }
 }
