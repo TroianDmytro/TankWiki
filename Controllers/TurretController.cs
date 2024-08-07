@@ -85,28 +85,6 @@ namespace TankWiki.Controllers
         }
 
        
-        [HttpPatch("AddGun")]
-        public async Task<IActionResult> AddGunToTurret(int turretId, int gunId)
-        {
-            var turret = await _dbContext.Turrets
-                .Include(t => t.TurretGuns)
-                .FirstOrDefaultAsync(t => t.TurretId == turretId);
-
-            if (turret == null)
-            {
-                return NotFound(new { Message = "Turret not found" });
-            }
-
-            var gun = await _dbContext.Guns.FindAsync(gunId);
-            if (gun == null)
-            {
-                return NotFound(new { Message = "Gun not found" });
-            }
-
-            turret.TurretGuns.Add(new TurretGun { TurretId = turret.TurretId, GunId = gun.GunId });
-            await _dbContext.SaveChangesAsync();
-
-            return NoContent();
-        }
+       
     }
 }
