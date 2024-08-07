@@ -26,7 +26,7 @@ namespace TankWiki.Controllers.ControllersManyToMany
             var turret = await _dbContext.Turrets.FindAsync(turretId);
             if (turret == null) return NotFound("Башта не знайдена.");
 
-            string resultOperation = string.Empty;
+            string resultOperation;
             try
             {
                 // Додавання нового зв'язку

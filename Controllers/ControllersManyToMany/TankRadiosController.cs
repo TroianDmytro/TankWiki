@@ -1,20 +1,14 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System;
-using TankWiki.Models;
 using TankWiki.Models.ModelOneToMany;
-using TankWiki.Models.ModelTank;
 
 namespace TankWiki.Controllers.ControllersManyToMany
 {
     [Route("[controller]")]
     [ApiController]
-    public class TankEnginsController : ControllerBase
+    public class TankRadiosController : ControllerBase
     {
-        private readonly MySqlDBContext _dbContext;
-
-        public TankEnginsController(MySqlDBContext dBContext) => _dbContext = dBContext;
-
         [HttpPost]
         public async Task<IActionResult> Post(int tankId, int engineId)
         {
@@ -24,7 +18,6 @@ namespace TankWiki.Controllers.ControllersManyToMany
             //перевіряе чи існуе двигун
             var engine = await _dbContext.Engines.FindAsync(engineId);
             if (engine == null) NotFound("Двигун не знайдено.");
-
             string resultOperation;
 
             try
@@ -46,12 +39,9 @@ namespace TankWiki.Controllers.ControllersManyToMany
         [HttpPut("update_engine_id")]
         public async Task<IActionResult> UpdateEngineId(int oldEngineId, int newEngineId)
         {
-            if (newEngineId < 0 || !await _dbContext.TankEngines.AnyAsync(t => t.EngineId == newEngineId))
-                return BadRequest("Wrong engine id.");
-
             await _dbContext.TankEngines
-                            .Where(el=>el.EngineId==oldEngineId)
-                            .ExecuteUpdateAsync(g=>g.SetProperty(p=>p.EngineId,newEngineId));
+                            .Where(el => el.EngineId == oldEngineId)
+                            .ExecuteUpdateAsync(g => g.SetProperty(p => p.EngineId, newEngineId));
             await _dbContext.SaveChangesAsync();
 
             return Ok("Update engine id.");
@@ -61,9 +51,6 @@ namespace TankWiki.Controllers.ControllersManyToMany
         [HttpPut("update_tank_id")]
         public async Task<IActionResult> UpdateTankId(int oldTankId, int newTankId)
         {
-            if (oldTankId < 0 || !await _dbContext.TankEngines.AnyAsync(t => t.TankId == oldTankId))
-                return BadRequest("Wrong tank id.");
-
             await _dbContext.TankEngines
                             .Where(el => el.TankId == oldTankId)
                             .ExecuteUpdateAsync(g => g.SetProperty(p => p.TankId, newTankId));
@@ -91,7 +78,7 @@ namespace TankWiki.Controllers.ControllersManyToMany
         [HttpDelete("DeleteEngine/{engineId}")]
         public async Task<IActionResult> DeleteEngineById(int engineId)
         {
-            if (engineId < 0 || !await _dbContext.TankEngines.AnyAsync(t => t.EngineId == engineId))
+            if (engineId < 0 || !await _dbContext.TankEngines.AnyAsync(t => t.TankId == engineId))
                 return BadRequest("Wrong engine id.");
 
             await _dbContext.TankEngines
