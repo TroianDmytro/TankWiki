@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using TankWiki.Models;
 using TankWiki.Models.ModelOneToMany;
+using TankWiki.Models.ModelTank;
 
 namespace TankWiki.Controllers.ControllersManyToMany
 {
@@ -9,22 +11,28 @@ namespace TankWiki.Controllers.ControllersManyToMany
     [ApiController]
     public class TankRadiosController : ControllerBase
     {
+        private readonly MySqlDBContext _dbContext;
+
+        public TankRadiosController(MySqlDBContext dBContext) => _dbContext = dBContext;
+
+
         [HttpPost]
-        public async Task<IActionResult> Post(int tankId, int engineId)
+        public async Task<IActionResult> Post(int tankId, int radioId)
         {
             //перевіряе чи існуе танк
             var tank = await _dbContext.Tanks.FindAsync(tankId);
             if (tank == null) NotFound("Танк не знайдено.");
-            //перевіряе чи існуе двигун
-            var engine = await _dbContext.Engines.FindAsync(engineId);
-            if (engine == null) NotFound("Двигун не знайдено.");
+            //перевіряе чи існуе радіо
+            var radio = await _dbContext.Radios.FindAsync(radioId);
+            if (radio == null) NotFound("Радіо не знайдено.");
+
             string resultOperation;
 
             try
             {
-                await _dbContext.TankEngines.AddAsync(new TankEngine { Engine = engine, Tank = tank });
+                await _dbContext.TankRadios.AddAsync(new TankRadio { Radio = radio, Tank = tank });
                 await _dbContext.SaveChangesAsync();
-                resultOperation = "Двигун додано до танка.";
+                resultOperation = "Радіо додано до танка.";
             }
             catch (Exception ex)
             {
@@ -35,23 +43,29 @@ namespace TankWiki.Controllers.ControllersManyToMany
             return Ok(resultOperation);
         }
 
-        // Замінює oldEngineId на newEngineId в таблиці TankEngines
-        [HttpPut("update_engine_id")]
-        public async Task<IActionResult> UpdateEngineId(int oldEngineId, int newEngineId)
+        // Замінює oldRadioId на newRadioId в таблиці TankRadios
+        [HttpPut("update_radio_id")]
+        public async Task<IActionResult> UpdateRadioId(int oldRadioId, int newRadioId)
         {
-            await _dbContext.TankEngines
-                            .Where(el => el.EngineId == oldEngineId)
-                            .ExecuteUpdateAsync(g => g.SetProperty(p => p.EngineId, newEngineId));
+            if (oldRadioId < 0 || !await _dbContext.TankRadios.AnyAsync(tr => tr.RadioId == oldRadioId))
+                return BadRequest("Wrong radio id.");
+
+            await _dbContext.TankRadios
+                            .Where(el => el.RadioId == oldRadioId)
+                            .ExecuteUpdateAsync(g => g.SetProperty(p => p.RadioId, newRadioId));
             await _dbContext.SaveChangesAsync();
 
-            return Ok("Update engine id.");
+            return Ok("Update radio id.");
         }
 
-        // Замінює oldTankId на newTankId в таблиці TankEngines
+        // Замінює oldTankId на newTankId в таблиці TankRadios
         [HttpPut("update_tank_id")]
         public async Task<IActionResult> UpdateTankId(int oldTankId, int newTankId)
         {
-            await _dbContext.TankEngines
+            if (oldTankId < 0 || !await _dbContext.TankRadios.AnyAsync(tr => tr.TankId == oldTankId))
+                return BadRequest("Wrong tank id.");
+
+            await _dbContext.TankRadios
                             .Where(el => el.TankId == oldTankId)
                             .ExecuteUpdateAsync(g => g.SetProperty(p => p.TankId, newTankId));
             await _dbContext.SaveChangesAsync();
@@ -59,34 +73,34 @@ namespace TankWiki.Controllers.ControllersManyToMany
             return Ok("Update tank id.");
         }
 
-        //видаляе всі рядки в яких зустрічается значення tankId
-        [HttpDelete("DeleteTank/{tankId}")]
+        //видаляе всі рядки в яких зустрічается значення tankId в таблиці TankRadios
+        [HttpDelete("delete_tank/{tankId}")]
         public async Task<IActionResult> DeleteTanksById(int tankId)
         {
-            if (tankId < 0 || !await _dbContext.TankEngines.AnyAsync(t => t.TankId == tankId))
+            if (tankId < 0 || !await _dbContext.TankRadios.AnyAsync(tr => tr.TankId == tankId))
                 return BadRequest("Wrong tank id.");
 
-            await _dbContext.TankEngines
-                            .Where(te => te.TankId == tankId)
+            await _dbContext.TankRadios
+                            .Where(tr => tr.TankId == tankId)
                             .ExecuteDeleteAsync();
             await _dbContext.SaveChangesAsync();
 
             return Ok("Deleted Tank.");
         }
 
-        //видаляе всі рядки в яких зустрічается значення engineId
-        [HttpDelete("DeleteEngine/{engineId}")]
-        public async Task<IActionResult> DeleteEngineById(int engineId)
+        //видаляе всі рядки в яких зустрічается значення radioId в таблиці TankRadios
+        [HttpDelete("delete_radio/{radioId}")]
+        public async Task<IActionResult> DeleteRadioById(int radioId)
         {
-            if (engineId < 0 || !await _dbContext.TankEngines.AnyAsync(t => t.TankId == engineId))
-                return BadRequest("Wrong engine id.");
+            if (radioId < 0 || !await _dbContext.TankRadios.AnyAsync(tr => tr.RadioId == radioId))
+                return BadRequest("Wrong radio id.");
 
-            await _dbContext.TankEngines
-                            .Where(te => te.EngineId == engineId)
+            await _dbContext.TankRadios
+                            .Where(tr => tr.RadioId == radioId)
                             .ExecuteDeleteAsync();
             await _dbContext.SaveChangesAsync();
 
-            return Ok("Deleted engine.");
+            return Ok("Deleted radio.");
         }
     }
 }
