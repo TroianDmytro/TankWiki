@@ -40,63 +40,30 @@ namespace TankWiki.Controllers
         }
 
         [HttpGet("{turretId}")]
-        public IActionResult GetId(int turretId)
+        public async Task<IActionResult> GetById(int turretId)
         {
-            var turret = _dbContext.Turrets
+            var turret = await _dbContext.Turrets
                 .Include(tg => tg.TurretGuns)
                 .ThenInclude(g => g.Gun)
                 .Include(tt => tt.TankTurrets)
                 .ThenInclude(t => t.Tank)
-                .FirstOrDefault(t => t.TurretId == turretId);
-            if (turret != null)
-            {
-                var newTurret = new TurretDTO()
-                {
-                    TurretId = turret.TurretId,
-                    TurretName = turret.TurretName,
-                    Tier = turret.Tier,
-                    TurretFront = turret.TurretFront,
-                    TurretSide = turret.TurretSide,
-                    TurretRear = turret.TurretRear,
-                    Turn = turret.Turn,
-                    Overview = turret.Overview,
-                    Weight = turret.Weight,
-                    Price = turret.Price,
-                    Guns = turret.TurretGuns.Select(gun => new GunDTO()
-                    {
-                        GunId = gun.Gun.GunId,
-                        Tier = gun.Gun.Tier,
-                        Name = gun.Gun.Name,
-                        Penetration = gun.Gun.Penetration,
-                        Damage = gun.Gun.Damage,
-                        RateOfFire = gun.Gun.RateOfFire,
-                        Accuracy = gun.Gun.Accuracy,
-                        AimTime = gun.Gun.AimTime,
-                        Ammunition = gun.Gun.Ammunition,
-                        Weight = gun.Gun.Weight,
-                        Price = gun.Gun.Price
-                    }).ToList(),
-                    Tanks = turret.TankTurrets.Select(t => new TankDTOTruncated(t.Tank)).ToList()
-                };
-                return Ok(turret);
-            }
+                .FirstOrDefaultAsync(t => t.TurretId == turretId);
 
-            return BadRequest();
+            if (turret == null) return BadRequest("Turret not found.");
+          
+            var newTurret = new TurretDTO(turret)
+            {
+                Guns = turret.TurretGuns.Select(gun => new GunDTO(gun.Gun)).ToList(),
+                
+                Tanks = turret.TankTurrets.Select(t => new TankDTOTruncated(t.Tank)).ToList()
+            };
+
+            return Ok(turret);
         }
 
         [HttpPost]
-        public IActionResult PostTurret(
-            [FromForm] string turretName,
-            [FromForm] int tier,
-            [FromForm] int turretFront,
-            [FromForm] int turretSide,
-            [FromForm] int turretRear,
-            [FromForm] double turn,
-            [FromForm] int overview,
-            [FromForm] int weight,
-            [FromForm] long price,
-            [FromForm] List<int> gunIds, // IDs для Guns
-            [FromForm] List<int> tankIds) // IDs для Tanks
+        public async Task<IActionResult> PostTurret(string turretName,int tier, int turretFront, int turretSide, int turretRear,
+                                        double turn, int overview, int weight, long price)
         {
             var turret = new Turret
             {
@@ -111,29 +78,10 @@ namespace TankWiki.Controllers
                 Price = price
             };
 
-            // Добавляем Guns и Tanks
-            foreach (var gunId in gunIds)
-            {
-                var gun = _dbContext.Guns.Find(gunId);
-                if (gun != null)
-                {
-                    turret.TurretGuns.Add(new TurretGun { Turret = turret, Gun = gun });
-                }
-            }
+            await _dbContext.Turrets.AddAsync(turret);
+            await _dbContext.SaveChangesAsync();
 
-            foreach (var tankId in tankIds)
-            {
-                var tank = _dbContext.Tanks.Find(tankId);
-                if (tank != null)
-                {
-                    turret.TankTurrets.Add(new TankTurret { Turret = turret, Tank = tank });
-                }
-            }
-
-            _dbContext.Turrets.Add(turret);
-            _dbContext.SaveChanges();
-
-            return Ok();
+            return Ok("Added turret.");
         }
 
        
