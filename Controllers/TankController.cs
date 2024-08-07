@@ -54,7 +54,7 @@ namespace TankWiki.Controllers
             return Ok(tanks);
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("{tankId}")]
         public async Task<IActionResult> GetById(int id)
         {
             Tank? tank = await _dbContext.Tanks
@@ -112,7 +112,7 @@ namespace TankWiki.Controllers
             return Ok("Танк додано.");
         }
 
-        [HttpPut("{id}")]
+        [HttpPut("{tankId}")]
         public async Task<IActionResult> Put(int id, string? name, int? nationId, int? tier, int? hitPoints, bool? status,
                                               long? price, int? typeId, int? armorId, [FromForm] List<string> crew)
         {
@@ -136,10 +136,10 @@ namespace TankWiki.Controllers
             return Ok("Update tank.");
         }
 
-        [HttpPatch("{id}")]
-        public async Task<IActionResult> PatchDescription(int id, string description)
+        [HttpPatch("updateDescription/{tankId}")]
+        public async Task<IActionResult> PatchDescription(int tankId, string description)
         {
-            Tank? tank = await _dbContext.Tanks.FindAsync(id);
+            Tank? tank = await _dbContext.Tanks.FindAsync(tankId);
             if (tank == null) return NotFound("Tank not found");
 
             tank.Description = description;
@@ -149,7 +149,7 @@ namespace TankWiki.Controllers
             return Ok("Added description.");
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("{tankId}")]
         public async Task<IActionResult> Delete(int id)
         {
             await _dbContext.Tanks.Where(t=>t.TankId==id).ExecuteDeleteAsync();
