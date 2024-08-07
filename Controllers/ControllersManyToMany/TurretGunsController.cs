@@ -65,7 +65,7 @@ namespace TankWiki.Controllers.ControllersManyToMany
                             .ExecuteUpdateAsync(g => g.SetProperty(p => p.TurretId, newTurretId));
             await _dbContext.SaveChangesAsync();
 
-            return Ok("Update gun id.");
+            return Ok("Update turret id.");
         }
 
         //видаляе всі колонки в яких зустрічается gunId

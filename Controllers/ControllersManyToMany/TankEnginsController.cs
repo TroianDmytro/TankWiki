@@ -42,6 +42,30 @@ namespace TankWiki.Controllers.ControllersManyToMany
             return Ok(resultOperation);
         }
 
+        // Замінює oldEngineId на newEngineId в таблиці TankEngines
+        [HttpPut("update_engine_id")]
+        public async Task<IActionResult> UpdateEngineId(int oldEngineId, int newEngineId)
+        {
+            await _dbContext.TankEngines
+                            .Where(el=>el.EngineId==oldEngineId)
+                            .ExecuteUpdateAsync(g=>g.SetProperty(p=>p.EngineId,newEngineId));
+            await _dbContext.SaveChangesAsync();
+
+            return Ok("Update engine id.");
+        }
+
+        // Замінює oldTankId на newTankId в таблиці TankEngines
+        [HttpPut("update_tank_id")]
+        public async Task<IActionResult> UpdateTankId(int oldTankId, int newTankId)
+        {
+            await _dbContext.TankEngines
+                            .Where(el => el.TankId == oldTankId)
+                            .ExecuteUpdateAsync(g => g.SetProperty(p => p.TankId, newTankId));
+            await _dbContext.SaveChangesAsync();
+
+            return Ok("Update tank id.");
+        }
+
         [HttpDelete("DeleteTank/{tankId}")]
         public async Task<IActionResult> DeleteTanksById(int tankId)
         {
