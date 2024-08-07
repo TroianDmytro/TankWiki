@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using TankWiki.Models;
 using TankWiki.Models.ModelOneToMany;
 
@@ -41,6 +42,24 @@ namespace TankWiki.Controllers.ControllersManyToMany
             }
 
             return Ok(resultOperation);
+        }
+
+        [HttpDelete("DeleteGan/{gunId}")]
+        public async Task<IActionResult> DeleteGunsById(int gunId)
+        {
+            await _dbContext.TurretGuns.Where(tg => tg.GunId == gunId).ExecuteDeleteAsync();
+            await _dbContext.SaveChangesAsync();
+
+            return Ok("Deleted Gan.");
+        }
+
+        [HttpDelete("DeleteTurret/{turretId}")]
+        public async Task<IActionResult> DeleteTurretsById(int turretId)
+        {
+            await _dbContext.TurretGuns.Where(tg => tg.TurretId == turretId).ExecuteDeleteAsync();
+            await _dbContext.SaveChangesAsync();
+
+            return Ok("Deleted turret.");
         }
     }
 }
