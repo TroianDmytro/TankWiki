@@ -4,7 +4,9 @@ using System;
 
 var builder = WebApplication.CreateBuilder(args);
 //conect to db
-builder.Services.AddDbContext<MySqlDBContext>(options=>options.UseSqlServer( builder.Configuration.GetConnectionString("SqlConnect")));
+//builder.Services.AddDbContext<MySqlDBContext>(options=>options.UseSqlServer( builder.Configuration.GetConnectionString("SqlConnect")));
+builder.Services.AddDbContext<MySqlDBContext>(options=>options
+                                .UseSqlServer( builder.Configuration.GetConnectionString("AmazonDbConnectionString")));
 // Add services to the container.
 
 builder.Services.AddControllers();

@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TankWiki.DTO;
 using TankWiki.Models;
-using TankWiki.Models.ModelOneToMany;
 using TankWiki.Models.ModelTank;
 
 namespace TankWiki.Controllers
@@ -39,23 +38,24 @@ namespace TankWiki.Controllers
                                         .ThenInclude(g => g.Gun)
                                         .Include(n => n.Nation)
                                         .Include(a => a.Armor)
-                                        .Select(t => new TankDTO(t)
-                                        {
-                                            Engines = t.TankEngines.Select(e => new EngineDTO(e.Engine)).ToList(),
-                                            Radios = t.TankRadios.Select(r => new RadioDTO(r.Radio)).ToList(),
-                                            Suspensions = t.TankSuspensions.Select(s => new SuspensionDTO(s.Suspension)).ToList(),
-                                            Turrets = t.TankTurrets.Select(t => new TurretDTO(t.Turret)
-                                            {
-                                                Guns = t.Turret.TurretGuns.Select(g => new GunDTO(g.Gun)).ToList(),
-                                            }).ToList(),
-                                        }
-                                        ).ToListAsync();
+                                        .ToListAsync();
 
-            return Ok(tanks);
+            var result =tanks.Select(t => new TankDTO(t)
+            {
+                Engines = t.TankEngines.Select(e => new EngineDTO(e.Engine)).ToList(),
+                Radios = t.TankRadios.Select(r => new RadioDTO(r.Radio)).ToList(),
+                Suspensions = t.TankSuspensions.Select(s => new SuspensionDTO(s.Suspension)).ToList(),
+                Turrets = t.TankTurrets.Select(t => new TurretDTO(t.Turret)
+                {
+                    Guns = t.Turret.TurretGuns.Select(g => new GunDTO(g.Gun)).ToList(),
+                }).ToList(),
+            }).ToList();
+
+            return Ok(result);
         }
 
         [HttpGet("{tankId}")]
-        public async Task<IActionResult> GetById(int id)
+        public async Task<IActionResult> GetById(int tankId)
         {
             Tank? tank = await _dbContext.Tanks
                                         .Include(tt => tt.TankType)
@@ -71,7 +71,7 @@ namespace TankWiki.Controllers
                                         .ThenInclude(g => g.Gun)
                                         .Include(n => n.Nation)
                                         .Include(a => a.Armor)
-                                        .FirstOrDefaultAsync(t => t.TankId == id);
+                                        .FirstOrDefaultAsync(t => t.TankId == tankId);
 
             if (tank == null) return NotFound("Tank not found.");
 
